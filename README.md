@@ -33,6 +33,8 @@ Als build tool voor de front-end zal Node worden gebruikt.
 
 - Werken met vertical slices en minimum viable products
 
+- Focussen op het leerproces boven een 'perfect' product
+
 ## Technische leerdoelen
 
 - Leren werken met Spring Boot als nieuw framework
@@ -40,3 +42,40 @@ Als build tool voor de front-end zal Node worden gebruikt.
 - Verdiepen in React en Tailwind voor front-end, om echt te begrijpen hoe het werkt
 
 - Leren werken met een externe API, en hoe die aan te roepen
+
+- Verkennen van verschillende libraries en mogelijkheden binenn Java en TypeScript, en hun werking doorgronden
+
+***
+
+## Back-end
+
+De back-end server gebruikt een Java API via Boostrap, en gebruikt Gradle als build tool. De server kan worden gestart als volgt:
+
+```bash
+# Build the project
+./gradlew build
+# Run the Jetty server
+./gradlew run
+```
+
+De back-end server luistert op `http://localhost:8080`
+
+## Front-end
+
+De front-end server is gebouwd als Vite server met NPM, en maakt gebruik van React en TypeScript. De server kan worden gestart als volgt:
+
+```bash
+# Install dependencies for project
+cd client
+npm install
+# Start the front-end server
+npm run dev
+```
+
+De front-end server luistert op `http://localhost:5173`
+
+## Database
+
+De persistence laag van de applicatie waarmee gebruikers en hun score worden opgeslagen is opgezet om contact te maken met een (lokale) MySQL database. Deze database kan als SQL script automatisch worden opgezet via het script dat [hier](SQLDatabaseInitialisationScript.md) te vinden is.
+
+De URL voor deze lokale database dient vervolgens ook met gebruiksnaam en wachtwoord te worden ingevuld op de aangegeven plaatsen in [UserRepositoryDatabase.java](UserRepositoryDatabase.java).
