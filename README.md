@@ -78,4 +78,4 @@ De front-end server luistert op `http://localhost:5173`
 
 De persistence laag van de applicatie waarmee gebruikers en hun score worden opgeslagen is opgezet om contact te maken met een (lokale) MySQL database. Deze database kan als SQL script automatisch worden opgezet via het script dat [hier](SQLDatabaseInitialisationScript.md) te vinden is.
 
-De URL voor deze lokale database dient vervolgens ook met gebruiksnaam en wachtwoord te worden ingevuld op de aangegeven plaatsen in [UserRepositoryDatabase.java](UserRepositoryDatabase.java).
+De URL voor deze lokale database dient vervolgens ook met gebruiksnaam en wachtwoord te worden ingevuld op de aangegeven plaatsen in [UserRepositoryDatabase.java](persistence/src/main/java/ip/rijksmuseumquiz/persistence/UserRepositoryDatabase.java).
