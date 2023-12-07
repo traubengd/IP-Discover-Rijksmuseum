@@ -1,16 +1,17 @@
 export type FullQuestion = {
-    question: Question;
+    questionAnswerData: QuestionAnswerData;
     image: Blob;
-    questionAnswered: boolean;
+    hintsUsed: number;
+    pointsAvailable: number;
+    questionType: QuestionType;
 }
 
-export type Question = {
+export type QuestionAnswerData = {
     correctObjectCode: string;
     answers: [Answer, Answer, Answer, Answer];
     correctAnswer: string;
+    artworkDate: number;
     plaqueDescription: string;
-    hintsUsed: number;
-    pointsAvailable: number;
 }
 
 export type Answer = {
@@ -23,8 +24,15 @@ export type User = {
     userscore: number;
 }
 
+export enum QuestionType {
+    ImageFragment,
+    ColourScheme,
+    Timeline,
+    Answered
+}
+
 export function isFullQuestion(fullQuestion: unknown): fullQuestion is FullQuestion{
-    return (fullQuestion as FullQuestion).question !== undefined && (fullQuestion as FullQuestion).image !== undefined;
+    return (fullQuestion as FullQuestion).questionAnswerData !== undefined && (fullQuestion as FullQuestion).image !== undefined && (fullQuestion as FullQuestion).questionType !== undefined;
 }
 
 export function isUser(user: unknown): user is User{

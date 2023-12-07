@@ -4,7 +4,6 @@ import java.util.Map;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Collections;
@@ -13,7 +12,6 @@ import java.util.concurrent.ThreadLocalRandom;
 
 import javax.imageio.ImageIO;
 
-import org.json.JSONException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -62,15 +60,8 @@ public class RijksmuseumquizController {
 				randomNumbers[2], randomNumbers[3]);
 
 		String specificObjectResults = rijksmuseumquizRestController.getSpecificArtwork(randomObjectCode);
-		String correctAnswerTitle = questionMaker.getLongTitle(specificObjectResults);
-		String correctAnswerDescription;
-		try {
-			correctAnswerDescription = questionMaker.getPlaqueDescription(specificObjectResults);
-		} catch (JSONException e) {
-			correctAnswerDescription = "";
-		}
 
-		IQuestion question = questionMaker.createQuestion(correctAnswerTitle, incorrectAnswers, correctAnswerDescription);
+		IQuestion question = questionMaker.createQuestion(specificObjectResults, incorrectAnswers);
 
 		QuestionDTO questionDTO = new QuestionDTO(question, randomObjectCode);
 
@@ -81,36 +72,46 @@ public class RijksmuseumquizController {
 	@ResponseBody
 	public ResponseEntity<byte[]> getQuestionSubImage(@RequestBody ObjectSearchInputDTO body) {
 		String specificObjectResults = rijksmuseumquizRestController.getSpecificArtwork(body.getObjectCode());
-		BufferedImage image = null;
 		try {
-			image = questionMaker.getSubImage(specificObjectResults);
-		} catch (URISyntaxException e) {
-			System.out.println("There was a problem getting the URI");
-		} catch (IOException e) {
-			System.out.println("There was a problem with the input or output");
+			BufferedImage image = questionMaker.getSubImage(specificObjectResults);
+			byte[] imageBytes = getImageBytes(image);
+			HttpHeaders responseHeaders = new HttpHeaders();
+			responseHeaders.setContentType(MediaType.IMAGE_JPEG);
+			return new ResponseEntity<byte[]>(imageBytes, responseHeaders, HttpStatus.OK);
+		} catch (Exception e) {
+			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
-		byte[] imageBytes = getImageBytes(image);
-		HttpHeaders responseHeaders = new HttpHeaders();
-		responseHeaders.setContentType(MediaType.IMAGE_JPEG);
-		return new ResponseEntity<byte[]>(imageBytes, responseHeaders, HttpStatus.OK);
+	}
+
+	@PostMapping(value = "/getquestioncolourscheme", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.IMAGE_JPEG_VALUE)
+	@ResponseBody
+	public ResponseEntity<byte[]> getQuestionColourscheme(@RequestBody ObjectSearchInputDTO body) {
+		String specificObjectResults = rijksmuseumquizRestController.getSpecificArtwork(body.getObjectCode());
+		try {
+			BufferedImage image = questionMaker.getColourSchemeImage(specificObjectResults);
+			byte[] imageBytes = getImageBytes(image);
+			HttpHeaders responseHeaders = new HttpHeaders();
+			responseHeaders.setContentType(MediaType.IMAGE_JPEG);
+			return new ResponseEntity<byte[]>(imageBytes, responseHeaders, HttpStatus.OK);
+		} catch (Exception e) {
+			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+
 	}
 
 	@PostMapping(value = "/getquestionfullimage", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.IMAGE_JPEG_VALUE)
 	@ResponseBody
 	public ResponseEntity<byte[]> getQuestionFullImage(@RequestBody ObjectSearchInputDTO body) {
 		String specificObjectResults = rijksmuseumquizRestController.getSpecificArtwork(body.getObjectCode());
-		BufferedImage image = null;
 		try {
-			image = questionMaker.getImage(specificObjectResults);
-		} catch (URISyntaxException e) {
-			System.out.println("There was a problem getting the URI");
-		} catch (IOException e) {
-			System.out.println("There was a problem with the input or output");
+			BufferedImage image = questionMaker.getFullImage(specificObjectResults);
+			byte[] imageBytes = getImageBytes(image);
+			HttpHeaders responseHeaders = new HttpHeaders();
+			responseHeaders.setContentType(MediaType.IMAGE_JPEG);
+			return new ResponseEntity<byte[]>(imageBytes, responseHeaders, HttpStatus.OK);
+		} catch (Exception e) {
+			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
-		byte[] imageBytes = getImageBytes(image);
-		HttpHeaders responseHeaders = new HttpHeaders();
-		responseHeaders.setContentType(MediaType.IMAGE_JPEG);
-		return new ResponseEntity<byte[]>(imageBytes, responseHeaders, HttpStatus.OK);
 	}
 
 	@PostMapping("/loginuser")
@@ -153,17 +154,25 @@ public class RijksmuseumquizController {
 		}
 		Collections.sort(userList, Comparator.comparing(UserDTO::getUserscore).reversed());
 		UserDTO[] users = userList.toArray(new UserDTO[userList.size()]);
-		return ResponseEntity.ok().body(users);	
+		return ResponseEntity.ok().body(users);
+	}
+
+	@PostMapping("/setsearchparameters")
+	@ResponseBody
+	public HttpStatus setSearchParameters(@RequestBody SearchParameterInputDTO body) {
+		String parameters = body.getSearchParameters();
+		rijksmuseumquizRestController.setSearchParameters(parameters);
+		return HttpStatus.OK;
 	}
 
 	private byte[] getImageBytes(BufferedImage image) {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        try {
+		try {
 			ImageIO.write(image, "jpeg", baos);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-        byte[] imageBytes = baos.toByteArray();
+		byte[] imageBytes = baos.toByteArray();
 		return imageBytes;
 	}
 }

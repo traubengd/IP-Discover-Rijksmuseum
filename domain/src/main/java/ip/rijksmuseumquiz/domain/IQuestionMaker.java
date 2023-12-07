@@ -6,9 +6,11 @@ import java.net.URISyntaxException;
 
 public interface IQuestionMaker {
     
-    public BufferedImage getImage(String jsonString) throws URISyntaxException, IOException;
+    public BufferedImage getFullImage(String jsonString) throws URISyntaxException, IOException;
 
     public BufferedImage getSubImage(String jsonString) throws URISyntaxException, IOException;
+
+    public BufferedImage getColourSchemeImage(String jsonString);
 
     public int getNumberOfPages(String jsonString, int resultsPerPage);
 
@@ -16,11 +18,7 @@ public interface IQuestionMaker {
 
     public String getRandomObjectCode(String jsonString, int objectIndex);
 
-    public String getLongTitle(String jsonString);
-
-    public String getPlaqueDescription(String jsonString);
-
     public String[] getMultipleTitles(String jsonString, int firstIndex, int secondIndex, int thirdIndex);
 
-    public Question createQuestion(String correctAnswer, String[] wrongAnswers, String plaqueDescription);
+    public Question createQuestion(String jsonString, String[] wrongAnswers);
 }

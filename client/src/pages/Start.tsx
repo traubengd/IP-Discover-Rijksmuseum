@@ -31,7 +31,6 @@ export const Start = () => {
 
     const getFullQuestionFromServer = async () => {
         const result = await getFullQuestion();
-
         if (isFullQuestion(result)) {
             setFullQuestion(result);
         } else {

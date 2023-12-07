@@ -6,7 +6,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class QuestionTest {
     String[] testWrongAnswers = {"firstWrongAnswer", "secondWrongAnswer", "thirdWrongAnswer"};
-    Question testQuestion = new Question("testAnswer", testWrongAnswers, "This is an artpiece");
+    Question testQuestion = new Question("testAnswer", testWrongAnswers, 1500, "This is an artpiece");
 
     @Test
     public void questionKnowsItsCorrectAnswer(){
@@ -19,6 +19,11 @@ public class QuestionTest {
         assertTrue(testQuestion.getWrongAnswers()[1].equals("secondWrongAnswer"));
         assertTrue(testQuestion.getWrongAnswers()[2].equals("thirdWrongAnswer"));
         assertEquals(3, testQuestion.getWrongAnswers().length);
+    }
+
+    @Test
+    public void questionHasAYearForItsCorrectArtwork(){
+        assertEquals(1500, testQuestion.getCorrectDate());
     }
 
     @Test

@@ -2,39 +2,58 @@ import { useEffect, useState } from 'react'
 import { getQuestionFullImage, updateUserScore, getUserScore, getFullQuestion } from '../services/api'
 import { useFullQuestion } from '../contexts/FullQuestionContext';
 import { Alert } from '../components/Alert';
-import { isFullQuestion, isUser } from '../types';
+import { FullQuestion, QuestionType, isFullQuestion, isUser } from '../types';
 import classNames from 'classnames';
 import { useUser } from '../contexts/UserContext';
+import { Slider } from 'rsuite';
+import 'rsuite/dist/rsuite-no-reset.min.css';
 
 export const Play = () => {
   const { fullQuestion, setFullQuestion } = useFullQuestion();
   const { user, setUser } = useUser();
-  const [imageSize, setImageSize] = useState("object-none w-[20%]");
+  const [imageSize, setImageSize] = useState(40);
   const [questionImageUrl, setQuestionImageUrl] = useState(URL.createObjectURL(fullQuestion!.image));
   const [alert, setAlert] = useState<string | null>(null);
   const [answerColour, setAnswerColour] = useState("bg-black/60");
+  const [selectedYear, setSelectedYear] = useState(1500);
+  const [nextQuestion, setNextQuestion] = useState<FullQuestion | undefined>(undefined);
 
-  const buttonLayout = "rounded border-2 p-2 m-5 bg-slate-200 hover:brightness-125"
+  const buttonLayout = "rounded border-2 p-2 m-5 bg-slate-200 hover:brightness-125 disabled:bg-slate-300 disabled:text-gray-500 disabled:hover:brightness-100";
 
   const nextQuestionClick = async () => {
-    const result = await getFullQuestion();
-
-    if (isFullQuestion(result)) {
-      setFullQuestion(result);
+    if (nextQuestion) {
+      setFullQuestion(nextQuestion);
       setAnswerColour("bg-black/60");
-      setImageSize("object-none w-[20%]");
+      setImageSize(40);
     } else {
-      await nextQuestionClick();
+      const result = await getFullQuestion();
+      if (isFullQuestion(result)) {
+        setFullQuestion(result);
+        setAnswerColour("bg-black/60");
+        setImageSize(40);
+      } else {
+        await nextQuestionClick();
+      }
+    }
+  }
+
+  const addQuestionToBacklog = async () => {
+    const result = await getFullQuestion();
+    if (isFullQuestion(result)) {
+      setNextQuestion(result);
+    } else {
+      await addQuestionToBacklog();
     }
   }
 
   useEffect(() => {
     setQuestionImageUrl(URL.createObjectURL(fullQuestion!.image));
+    addQuestionToBacklog();
   }, [fullQuestion]);
 
 
   const getQuestionFullImageFromServer = async () => {
-    const imageResult = await getQuestionFullImage(fullQuestion!.question.correctObjectCode);
+    const imageResult = await getQuestionFullImage(fullQuestion!.questionAnswerData.correctObjectCode);
     setQuestionImageUrl(URL.createObjectURL(imageResult));
   }
 
@@ -48,45 +67,208 @@ export const Play = () => {
     }
   }
 
-  const revealAnswers = (index: number) => {
-    if (fullQuestion!.question.answers[index].correctAnswer) {
+  const handleQuestionAnswered = async () => {
+    await getQuestionFullImageFromServer();
+    fullQuestion!.questionType = QuestionType.Answered;
+  }
+
+  const checkMultipleChoiceAnswer = (index: number) => {
+    if (fullQuestion!.questionAnswerData.answers[index].correctAnswer) {
       setAnswerColour("bg-green-700/60");
-      updateUserScoreInDatabase(fullQuestion!.question.pointsAvailable);
+      updateUserScoreInDatabase(fullQuestion!.pointsAvailable);
     } else {
       setAnswerColour("bg-red-600/60");
     }
-    getQuestionFullImageFromServer();
-    fullQuestion!.questionAnswered = true;
-    setImageSize("");
+    handleQuestionAnswered();
+  }
+
+  const checkTimelineAnswer = (timelineAnswer: number) => {
+    const proximityToCorrectYear = Math.abs(fullQuestion!.questionAnswerData.artworkDate - timelineAnswer);
+    const pointsAwarded = Math.max(0, Math.ceil(10 - (proximityToCorrectYear / 3)));
+    if (pointsAwarded > 0) {
+      setAnswerColour("bg-green-700/60");
+      updateUserScoreInDatabase(pointsAwarded);
+    } else {
+      setAnswerColour("bg-red-600/60");
+    }
+    handleQuestionAnswered();
   }
 
   const getHint = () => {
-    switch (fullQuestion!.question.hintsUsed) {
-      case 0:
-        setImageSize("object-none w-[35%]");
-        fullQuestion!.question.hintsUsed++;
-        fullQuestion!.question.pointsAvailable--;
+    switch (fullQuestion!.questionType) {
+      case QuestionType.ImageFragment:
+        getHintForImageFragment();
         break;
-      case 1:
-        setImageSize("object-none w-[50%]");
-        fullQuestion!.question.hintsUsed++;
-        fullQuestion!.question.pointsAvailable--;
-        break;
-      case 2:
-        setImageSize("object-none w-[65%]");
-        fullQuestion!.question.hintsUsed++;
-        fullQuestion!.question.pointsAvailable--;
-        break;
-      case 3:
-        setImageSize("object-none w-[80%]");
-        fullQuestion!.question.hintsUsed++;
-        fullQuestion!.question.pointsAvailable--;
+      case QuestionType.ColourScheme:
+        getHintForColourScheme();
         break;
       default:
         break;
     }
   }
 
+  const getHintForImageFragment = () => {
+        setImageSize(imageSize+20);
+        fullQuestion!.hintsUsed+= 2;
+        fullQuestion!.pointsAvailable-= 2;
+  }
+
+  const getHintForColourScheme = () => {
+    fullQuestion!.hintsUsed += 2;
+    fullQuestion!.pointsAvailable -= 3;
+    disableWrongAnswer();
+    setQuestionImageUrl(URL.createObjectURL(fullQuestion!.image));
+  }
+
+  const disableWrongAnswer = () => {
+    const randomAnswerIndex = Math.floor(Math.random() * 3);
+    if (!document.getElementById('answerbutton' + randomAnswerIndex)?.getAttribute('disabled') && !fullQuestion!.questionAnswerData.answers[randomAnswerIndex].correctAnswer) {
+      document.getElementById('answerbutton' + randomAnswerIndex)?.setAttribute('disabled', 'true');
+    } else {
+      disableWrongAnswer();
+    }
+  }
+
+  const questionComponents = () => {
+    switch (fullQuestion!.questionType) {
+      case QuestionType.ImageFragment:
+        return (
+          <>
+            <div className="flex justify-center">
+              <div className="flex justify-center w-[500px]">
+                <img src={questionImageUrl} className={classNames("m-5 object-none w-[" + imageSize + "%]")} />
+              </div>
+            </div>
+            <h1 className="text-2xl font-semibold text-center text-white my-4">Identify the painting in the above fragment</h1>
+            {multipleChoiceComponents()}
+          </>
+        )
+      case QuestionType.ColourScheme:
+        return (
+          <>
+            <div className="flex justify-center">
+              <div className="flex justify-center w-[500px]">
+                <img src={questionImageUrl} className={classNames("m-5 object-fill w-[500px]")} />
+              </div>
+            </div>
+            <h1 className="text-2xl font-semibold text-center text-white my-4">Identify the painting that the above colour scheme belongs to</h1>
+            {multipleChoiceComponents()}
+          </>
+        )
+      case QuestionType.Timeline:
+        return (
+          <>
+            <div className="flex justify-center">
+              <div className="flex justify-center w-[500px]">
+                <img src={questionImageUrl} className={classNames("m-5 object-fill w-[500px]")} />
+              </div>
+            </div>
+            <h1 className="text-2xl font-semibold text-center text-white my-4">Earn up to {fullQuestion!.pointsAvailable} points by identifying when this
+              painting was produced (at the earliest). Lose 1 point for every 3 years you are off by.</h1>
+            <div>
+              <div className='flex justify-center mt-5'>
+                <label className='text-white font-semibold ml-7'>
+                  1000
+                </label>
+                <>
+                  <Slider
+                    className='w-full m-3'
+                    progress
+                    min={1000}
+                    max={2023}
+                    defaultValue={1500}
+                    onChange={value => {
+                      setSelectedYear(value);
+                    }}
+                  />
+                </>
+                <label className='text-white font-semibold mr-7'>
+                  2023
+                </label>
+              </div>
+              <div className='flex justify-center'>
+                <button
+                  className={buttonLayout}
+                  onClick={() => checkTimelineAnswer(selectedYear)}
+                >
+                  Submit answer
+                </button>
+              </div>
+            </div>
+          </>
+        )
+      case QuestionType.Answered:
+        return (
+          <>
+            <div className="flex justify-center">
+              <button className="rounded border-2 p-2 m-5 bg-white" onClick={() => nextQuestionClick()}>
+                Next Question
+              </button>
+            </div>
+            <div className="flex justify-center">
+              <div className="flex justify-center w-[500px]">
+                <img src={questionImageUrl} className={classNames("m-5 object-fill w-[500px]")} />
+              </div>
+            </div>
+            <div>
+              <h1 className="text-2xl font-semibold text-center text-white my-4">{fullQuestion!.questionAnswerData.correctAnswer}</h1>
+              <span className="text-white flex text-justify m-6 mt-0">
+                {fullQuestion!.questionAnswerData.plaqueDescription}
+              </span>
+            </div>
+          </>
+        )
+    }
+  }
+
+  const multipleChoiceComponents = () => {
+    return (
+      <div>
+        <h1 className="text-xl font-semibold text-center text-white my-4">You can still earn {fullQuestion!.pointsAvailable} points</h1>
+        <div className={classNames("flex justify-center")}>
+          <button
+            id='answerbutton0'
+            className={classNames(buttonLayout)}
+            onClick={() => checkMultipleChoiceAnswer(0)}
+          >
+            {fullQuestion!.questionAnswerData.answers[0].longTitle}
+          </button>
+          <button
+            id='answerbutton1'
+            className={classNames(buttonLayout)}
+            onClick={() => checkMultipleChoiceAnswer(1)}
+          >
+            {fullQuestion!.questionAnswerData.answers[1].longTitle}
+          </button>
+          <button
+            id='answerbutton2'
+            className={classNames(buttonLayout)}
+            onClick={() => checkMultipleChoiceAnswer(2)}
+          >
+            {fullQuestion!.questionAnswerData.answers[2].longTitle}
+          </button>
+          <button
+            id='answerbutton3'
+            className={classNames(buttonLayout)}
+            onClick={() => checkMultipleChoiceAnswer(3)}
+          >
+            {fullQuestion!.questionAnswerData.answers[3].longTitle}
+          </button>
+        </div>
+        <div className={classNames("flex justify-center")}>
+          <button
+            className={classNames(buttonLayout)}
+            onClick={() => getHint()}
+            disabled={fullQuestion!.hintsUsed >= 4}
+          >
+            Get Hint
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  //Actual page contents are rendered here
   return (
     <>
       <div className="`relative h-full w-screen bg-cover bg-center bg-no-repeat p-12 bg-rijksmuseum">
@@ -94,73 +276,8 @@ export const Play = () => {
           <h1 className="text-5xl font-semibold text-center m-5 text-white">Discover the Rijksmuseum Collection</h1>
           <h1 className="text-l font-semibold m-2 ml-5 text-white">Current player: {user!.username}</h1>
           <h1 className="text-l font-semibold m-2 ml-5 text-white">Current score: {user!.userscore.toString()}</h1>
-          <div className="flex justify-center">
-            {fullQuestion!.questionAnswered ?
-              <button className="rounded border-2 p-2 m-5 bg-white" onClick={() => nextQuestionClick()}>
-                Next Question
-              </button>
-              :
-              <div />
-            }
-          </div>
           {alert && <Alert text={alert} onClick={() => setAlert(null)} />}
-          <div className="flex justify-center">
-            <div className="flex justify-center w-[500px]">
-              <img src={questionImageUrl} className={classNames("m-5", imageSize)} />
-            </div>
-          </div>
-          {fullQuestion!.questionAnswered ?
-            <>
-              <h1 className="text-2xl font-semibold text-center text-white my-4">{fullQuestion!.question.correctAnswer}</h1>
-              <span className="text-white flex text-justify m-6 mt-0">
-                {fullQuestion!.question.plaqueDescription}
-              </span>
-            </>
-            :
-            <>
-              <h1 className="text-2xl font-semibold text-center text-white my-4">Identify the painting and painter</h1>
-              <h1 className="text-xl font-semibold text-center text-white my-4">You can still earn {fullQuestion!.question.pointsAvailable} points</h1>
-              <div className={classNames("flex justify-center")}>
-                <button
-                  className={classNames(buttonLayout, { "hover:brightness-125": !fullQuestion!.questionAnswered })}
-                  onClick={() => revealAnswers(0)}
-                  disabled={fullQuestion!.questionAnswered}
-                >
-                  {fullQuestion!.question.answers[0].longTitle}
-                </button>
-                <button
-                  className={classNames(buttonLayout)}
-                  onClick={() => revealAnswers(1)}
-                  disabled={fullQuestion!.questionAnswered}
-                >
-                  {fullQuestion!.question.answers[1].longTitle}
-                </button>
-                <button
-                  className={classNames(buttonLayout)}
-                  onClick={() => revealAnswers(2)}
-                  disabled={fullQuestion!.questionAnswered}
-                >
-                  {fullQuestion!.question.answers[2].longTitle}
-                </button>
-                <button
-                  className={classNames(buttonLayout)}
-                  onClick={() => revealAnswers(3)}
-                  disabled={fullQuestion!.questionAnswered}
-                >
-                  {fullQuestion!.question.answers[3].longTitle}
-                </button>
-              </div>
-              <div className={classNames("flex justify-center")}>
-                <button
-                  className={classNames(buttonLayout, "disabled:bg-slate-300 disabled:text-gray-500 disabled:hover:brightness-100")}
-                  onClick={() => getHint()}
-                  disabled={fullQuestion!.questionAnswered || fullQuestion!.question.hintsUsed >= 4}
-                >
-                  Get Hint
-                </button>
-              </div>
-            </>
-          }
+          {questionComponents()}
         </div>
       </div>
     </>

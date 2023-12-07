@@ -5,5 +5,7 @@ public interface IQuestion {
 
     public String[] getWrongAnswers();
 
+    public int getCorrectDate();
+
     public String getPlaqueDescription();
 }

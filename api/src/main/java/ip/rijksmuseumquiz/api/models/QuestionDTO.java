@@ -10,13 +10,13 @@ public class QuestionDTO {
     private String correctObjectCode;
     private AnswerDTO[] answers;
     private String correctAnswer;
+    private int artworkDate;
     private String plaqueDescription;
-    private int hintsUsed;
-    private int pointsAvailable;
 
     public QuestionDTO(IQuestion question, String correctObjectCode) {
         this.correctObjectCode = correctObjectCode;
         this.plaqueDescription = question.getPlaqueDescription();
+        this.artworkDate = question.getCorrectDate();
         this.correctAnswer = question.getCorrectAnswer();
         this.answers = new AnswerDTO[4];
         this.answers[0] = new AnswerDTO(question.getCorrectAnswer(), true);
@@ -29,9 +29,6 @@ public class QuestionDTO {
         Collections.shuffle(answerList);
 
         answerList.toArray(this.answers);
-
-        this.hintsUsed = 0;
-        this.pointsAvailable = 5;
     }
 
     public String getCorrectObjectCode(){
@@ -50,11 +47,7 @@ public class QuestionDTO {
         return plaqueDescription;
     }
 
-    public int getHintsUsed(){
-        return hintsUsed;
-    }
-
-    public int getPointsAvailable(){
-        return pointsAvailable;
+    public int getArtworkDate(){
+        return artworkDate;
     }
 }

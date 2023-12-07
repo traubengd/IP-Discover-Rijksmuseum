@@ -11,8 +11,8 @@ public class UserRepositoryDatabase implements IUserRepository {
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
             Connection connection = DriverManager.getConnection(
-                    "DATABASEURL", "DATABASEUSERNAME",
-                    "DATABASEPASSWORD");
+                    "jdbc:mysql://127.0.0.1:3306/iprijksmuseum?useSSL=false&allowPublicKeyRetrieval=true", "root",
+                    "sogyo");
             Statement statement;
             statement = connection.createStatement();
             ResultSet resultSet = statement
@@ -32,8 +32,8 @@ public class UserRepositoryDatabase implements IUserRepository {
             double previousScore = getUserScore(username);
             double newScore = previousScore + scoreToAdd;
             Class.forName("com.mysql.cj.jdbc.Driver");
-            Connection connection = DriverManager.getConnection("DATABASEURL", "DATABASEUSERNAME",
-                    "DATABASEPASSWORD");
+            Connection connection = DriverManager.getConnection("jdbc:mysql://127.0.0.1:3306/iprijksmuseum", "root",
+                    "sogyo");
             Statement statement;
             statement = connection.createStatement();
             statement.executeUpdate(
@@ -49,8 +49,8 @@ public class UserRepositoryDatabase implements IUserRepository {
         HashMap<String, Double> leaderboard = new HashMap<>();
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
-            Connection connection = DriverManager.getConnection("DATABASEURL", "DATABASEUSERNAME",
-                    "DATABASEPASSWORD");
+            Connection connection = DriverManager.getConnection("jdbc:mysql://127.0.0.1:3306/iprijksmuseum", "root",
+                    "sogyo");
             Statement statement;
             statement = connection.createStatement();
             ResultSet resultSet = statement
@@ -74,8 +74,8 @@ public class UserRepositoryDatabase implements IUserRepository {
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
             Connection connection = DriverManager.getConnection(
-                    "DATABASEURL", "DATABASEUSERNAME",
-                    "DATABASEPASSWORD");
+                    "jdbc:mysql://127.0.0.1:3306/iprijksmuseum?useSSL=false&allowPublicKeyRetrieval=true", "root",
+                    "sogyo");
             Statement statement;
             statement = connection.createStatement();
             ResultSet resultSet = statement

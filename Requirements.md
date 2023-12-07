@@ -3,7 +3,7 @@
 
 ## Must
 - [ ] Vraag genereren door een willekeurig tile van een willekeurig werk uit de Rijksmuseum collectie te kiezen
-- [ ] Vraag presenteren aan gebruiker, als multiple choice tot welk werk en welke schilder het fragment behoord
+- [ ] Vraag presenteren aan gebruiker, als multiple choice tot welk werk en welke schilder het fragment behoort
 - [ ] Aangeven of antwoord van gebruiker op de vraag correct is of niet
 - [ ] Score van gebruiker aanpassen op basis van goed antwoord of niet
 - [ ] Meerdere gebruikers (meerdere usernames) bijhouden
@@ -12,6 +12,7 @@
 - [ ] Gebruiker hints geven voor vragen wanneer hierom gevraagd wordt
 - [ ] Andere soort vraag kunnen stellen waarin gebruiker werk op een tijdlijn moet plaatsen
 - [ ] Andere soort vraag kunnen stellen waarin gebruiker het verband tussen meerdere werken moet aangeven
+- [ ] Andere soort vraag kunnen stellen waarin gebruiker een werk moet identificeren aan de hand van een kleurenschema
 - [ ] Na een vraag extra informatie geven over een werk, en een link voor nog uitgebreidere informatie op Rijksmuseum website
 
 ## Could
