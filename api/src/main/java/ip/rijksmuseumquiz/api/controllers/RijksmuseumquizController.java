@@ -1,14 +1,11 @@
 package ip.rijksmuseumquiz.api.controllers;
 
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.concurrent.ThreadLocalRandom;
+import java.time.LocalDate;
 
 import javax.imageio.ImageIO;
 
@@ -25,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import ip.rijksmuseumquiz.api.models.*;
+import ip.rijksmuseumquiz.domain.IArtworkOfTheDay;
 import ip.rijksmuseumquiz.domain.IQuestion;
 import ip.rijksmuseumquiz.domain.IQuestionMaker;
 import ip.rijksmuseumquiz.domain.QuestionMaker;
@@ -55,7 +53,7 @@ public class RijksmuseumquizController {
 
 		int[] randomNumbers = ThreadLocalRandom.current().ints(0, numberOfObjects).distinct().limit(4).toArray();
 
-		String randomObjectCode = questionMaker.getRandomObjectCode(specificPageResults, randomNumbers[0]);
+		String randomObjectCode = questionMaker.getObjectCodeOfSpecificIndex(specificPageResults, randomNumbers[0]);
 		String[] incorrectAnswers = questionMaker.getMultipleTitles(specificPageResults, randomNumbers[1],
 				randomNumbers[2], randomNumbers[3]);
 
@@ -163,6 +161,20 @@ public class RijksmuseumquizController {
 		String parameters = body.getSearchParameters();
 		rijksmuseumquizRestController.setSearchParameters(parameters);
 		return HttpStatus.OK;
+	}
+
+	@GetMapping("/getartworkoftheday")
+	@ResponseBody
+	public ResponseEntity<ArtworkOfTheDayDTO> getArtworkOfTheDay() {
+		LocalDate date = LocalDate.now();
+		int desiredIndex = date.getDayOfMonth();
+		int desiredPage = date.getMonthValue();
+		String multipages = rijksmuseumquizRestController.getMultipageForArtworkOfTheDay(resultsPerPage, desiredPage);
+		String objectCode = questionMaker.getObjectCodeOfSpecificIndex(multipages, desiredIndex);
+		String specificObjectString = rijksmuseumquizRestController.getSpecificArtwork(objectCode);
+		IArtworkOfTheDay artworkOfTheDay = questionMaker.createArtworkOfTheDay(specificObjectString);
+		ArtworkOfTheDayDTO artworkData = new ArtworkOfTheDayDTO(artworkOfTheDay);
+		return ResponseEntity.ok().body(artworkData);
 	}
 
 	private byte[] getImageBytes(BufferedImage image) {

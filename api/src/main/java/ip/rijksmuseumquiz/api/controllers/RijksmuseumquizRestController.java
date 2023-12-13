@@ -37,4 +37,12 @@ public class RijksmuseumquizRestController {
     public void setSearchParameters(String parameters) {
 		this.searchParameters = parameters;
     }
+
+	public String getMultipageForArtworkOfTheDay(int resultsPerPage, int desiredPage) {
+        String url = "https://www.rijksmuseum.nl/api/nl/collection/?key="+ apiKey + "&ps=" + resultsPerPage + "&p=" + desiredPage + "&type=schilderij&imgonly=true&toppieces=true";
+		RestTemplate restTemplate = new RestTemplate();
+		String queryResults = restTemplate.getForObject(url, String.class);
+
+		return queryResults;
+    }
 }

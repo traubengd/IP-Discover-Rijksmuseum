@@ -1,4 +1,4 @@
-import { FullQuestion, QuestionAnswerData, User, QuestionType } from "../types";
+import { FullQuestion, QuestionAnswerData, User, QuestionType, ArtworkOfTheDayData, ArtworkOfTheDayType } from "../types";
 
 export async function getFullQuestion() {
     const questionAndAnswers = await getQuestionObjectAndAnswers();
@@ -185,4 +185,16 @@ export async function setSearchParameters(searchParameters: string) {
             statusText: response.statusText
         };
     }
+}
+
+export async function getArtworkOfTheDay() {
+    const response = await fetch("rijksmuseumquiz/getartworkoftheday");
+    const result = await response.json();
+    const artworkData = result as ArtworkOfTheDayData;
+    const artworkImage = await getQuestionFullImage(artworkData.objectCode);
+    const artworkOfTheDay: ArtworkOfTheDayType = {
+        artworkData: artworkData,
+        image: artworkImage
+    }
+    return artworkOfTheDay as ArtworkOfTheDayType;
 }

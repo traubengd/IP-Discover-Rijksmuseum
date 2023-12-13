@@ -26,7 +26,6 @@
       <property name="tokens" value="LITERAL_WHILE, LITERAL_DO"/>
     </module>
     <module name="BooleanExpressionComplexity"/>
-    <module name="ClassFanOutComplexity"/>
     <module name="JavaNCSS"/>
     <module name="NPathComplexity"/>
     <module name="AvoidNestedBlocks"/>

@@ -39,7 +39,7 @@ public class QuestionMakerTest {
 
     @Test
     public void questionMakerCanGetAnObjectCodeFromASinglePageQueryString() {
-        String objectCode = questionMaker.getRandomObjectCode(testSinglePageQueryString, 2);
+        String objectCode = questionMaker.getObjectCodeOfSpecificIndex(testSinglePageQueryString, 2);
         assertEquals("BK-1979-94-1", objectCode);
     }
 
@@ -51,7 +51,7 @@ public class QuestionMakerTest {
 
     @Test
     public void questionMakerCanGetAPlaqueDescriptionFromAnArtObjectQueryString() {
-        String plaqueDescription = questionMaker.getPlaqueDescription(testArtObjectQueryString);
+        String plaqueDescription = questionMaker.getArtworkDescription(testArtObjectQueryString);
         assertTrue(plaqueDescription.equals(
                 "Rembrandts beroemdste en grootste doek werd gemaakt voor de Kloveniersdoelen. Dit was een van de verenigingsgebouwen van de Amsterdamse schutterij, de burgerwacht van de stad. \r\nRembrandt was de eerste die op een groepsportret de figuren in actie weergaf. De kapitein, in het zwart, geeft zijn luitenant opdracht dat de compagnie moet gaan marcheren. De schutters stellen zich op. Met behulp van licht vestigde Rembrandt de aandacht op belangrijke details, zoals het handgebaar van de kapitein en het kleine meisje op de achtergrond. Zij is de mascotte van de schutters."));
     }
@@ -71,10 +71,10 @@ public class QuestionMakerTest {
     public void questionMakerCanReturnCorrectColourschemeBasedOnInputObjectString(){
         BufferedImage colourscheme = questionMaker.getColourSchemeImage(testArtObjectQueryString);
         Color firstBarColour = new Color(colourscheme.getRGB(0, 0));
-        Color secondBarColour = new Color(colourscheme.getRGB(100, 0));
-        Color thirdBarColour = new Color(colourscheme.getRGB(200, 0));
-        Color fourthBarColour = new Color(colourscheme.getRGB(300, 0));
-        Color fifthBarColour = new Color(colourscheme.getRGB(400, 0));
+        Color secondBarColour = new Color(colourscheme.getRGB(440, 0));
+        Color thirdBarColour = new Color(colourscheme.getRGB(470, 0));
+        Color fourthBarColour = new Color(colourscheme.getRGB(485, 0));
+        Color fifthBarColour = new Color(colourscheme.getRGB(495, 0));
         assertEquals(new Color(38, 24, 8), firstBarColour);
         assertEquals(new Color(94, 60, 20), secondBarColour);
         assertEquals(new Color(156, 130, 56), thirdBarColour);
@@ -90,6 +90,15 @@ public class QuestionMakerTest {
         assertThrows(JSONException.class, () -> {
             questionMaker.getSubImage(testArtObjectQueryStringImageNull);
         });
+    }
+
+    @Test
+    public void questionMakerCanGenerateAnArtworkOfTheDayFromAnObjectString(){
+        ArtworkOfTheDay artworkOfTheDay = questionMaker.createArtworkOfTheDay(testArtObjectQueryString);
+        assertTrue(artworkOfTheDay.getArtist().equals("Rembrandt van Rijn"));
+        assertTrue(artworkOfTheDay.getTitle().equals("De Nachtwacht"));
+        assertEquals(1642, artworkOfTheDay.getYear());
+        assertTrue(artworkOfTheDay.getArtworkUrl().equals("http://www.rijksmuseum.nl/nl/collectie/SK-C-5"));
     }
 
     private String testArtObjectQueryString = "{\"elapsedMilliseconds\":2348,\"artObject\":{\"links\":{\"search\":\"http://www.rijksmuseum.nl/api/nl/collection\"},\"id\":\"nl-SK-C-5\",\"priref\":\"5216\",\"objectNumber\":\"SK-C-5\",\"language\":\"nl\",\"title\":\"De Nachtwacht\",\"copyrightHolder\":null,\"webImage\":{\"guid\":\"bbd1fae8-4023-4859-8ed1-d38616aec96c\",\"offsetPercentageX\":50,\"offsetPercentageY\":100,\"width\":5656,\"height\":4704,\"url\":\"https://lh3.googleusercontent.com/SsEIJWka3_cYRXXSE8VD3XNOgtOxoZhqW1uB6UFj78eg8gq3G4jAqL4Z_5KwA12aD7Leqp27F653aBkYkRBkEQyeKxfaZPyDx0O8CzWg=s0\"},\"colors\":[{\"percentage\":81,\"hex\":\"#261808\"},{\"percentage\":9,\"hex\":\" #5E3C14\"},{\"percentage\":3,\"hex\":\" #9C8238\"},{\"percentage\":2,\"hex\":\" #885617\"},{\"percentage\":1,\"hex\":\" #AF9F6B\"},{\"percentage\":0,\"hex\":\" #6C6238\"},{\"percentage\":0,\"hex\":\" #D7CB9E\"}],\"colorsWithNormalization\":[{\"originalHex\":\"#261808\",\"normalizedHex\":\"#000000\"},{\"originalHex\":\" #5E3C14\",\"normalizedHex\":\"#B35A1F\"},{\"originalHex\":\" #9C8238\",\"normalizedHex\":\"#E09714\"},{\"originalHex\":\" #885617\",\"normalizedHex\":\"#B35A1F\"},{\"originalHex\":\" #AF9F6B\",\"normalizedHex\":\"#E0CC91\"},{\"originalHex\":\" #6C6238\",\"normalizedHex\":\"#367614\"},{\"originalHex\":\" #D7CB9E\",\"normalizedHex\":\"#E0CC91\"}],\"normalizedColors\":[{\"percentage\":81,\"hex\":\"#000000\"},{\"percentage\":12,\"hex\":\" #8B4513\"},{\"percentage\":3,\"hex\":\" #B8860B\"},{\"percentage\":1,\"hex\":\" #BDB76B\"},{\"percentage\":0,\"hex\":\" #556B2F\"},{\"percentage\":0,\"hex\":\" #F5DEB3\"}],\"normalized32Colors\":[{\"percentage\":81,\"hex\":\"#000000\"},{\"percentage\":12,\"hex\":\" #B35A1F\"},{\"percentage\":3,\"hex\":\" #E09714\"},{\"percentage\":2,\"hex\":\" #E0CC91\"},{\"percentage\":0,\"hex\":\" #367614\"}],\"materialsThesaurus\":[],\"techniquesThesaurus\":[],\"productionPlacesThesaurus\":[],\"titles\":[\"Officieren en andere schutters van wijk II in Amsterdam, onder leiding van kapitein Frans Banninck Cocq en luitenant Willem van Ruytenburch, bekend als ‘De Nachtwacht’\",\"Het korporaalschap van kapitein Frans Banninck Cocq en luitenant Willem van Ruytenburch, bekend als de 'Nachtwacht'\"],\"description\":\"Officieren en andere schutters van wijk II in Amsterdam onder leiding van kapitein Frans Banninck Cocq en luitenant Willem van Ruytenburch, sinds het einde van de 18de eeuw bekend als ‘De Nachtwacht’. Schutters van de Kloveniersdoelen uit een poort naar buiten tredend. Op een schild aangebracht naast de poort staan de namen van de afgebeelde personen: Frans Banning Cocq, heer van purmerlant en Ilpendam, Capiteijn Willem van Ruijtenburch van Vlaerdingen, heer van Vlaerdingen, Lu[ij]tenant, Jan Visscher Cornelisen Vaendrich, Rombout Kemp Sergeant, Reijnier Engelen Sergeant, Barent Harmansen, Jan Adriaensen Keyser, Elbert Willemsen, Jan Clasen Leydeckers, Jan Ockersen, Jan Pietersen bronchorst, Harman Iacobsen wormskerck, Jacob Dircksen de Roy, Jan vander heede, Walich Schellingwou, Jan brugman, Claes van Cruysbergen, Paulus Schoonhoven. De schutters zijn gewapend met onder anderen pieken, musketten en hellebaarden. Rechts de tamboer met een grote trommel. Tussen de soldaten links staat een meisje met een dode kip om haar middel, rechts een blaffende hond. Linksboven de vaandrig met de uitgestoken vaandel.\",\"labelText\":null,\"objectTypes\":[\"schilderij\"],\"objectCollection\":[\"schilderijen\"],\"makers\":[],\"principalMakers\":[{\"name\":\"Rembrandt van Rijn\",\"unFixedName\":\"Rijn, Rembrandt van\",\"placeOfBirth\":\"Leiden\",\"dateOfBirth\":\"1606-07-15\",\"dateOfBirthPrecision\":null,\"dateOfDeath\":\"1669-10-08\",\"dateOfDeathPrecision\":null,\"placeOfDeath\":\"Amsterdam\",\"occupation\":[\"prentmaker\",\"tekenaar\",\"schilder\"],\"roles\":[\"schilder\"],\"nationality\":\"Noord-Nederlands\",\"biography\":null,\"productionPlaces\":[\"Amsterdam\"],\"qualification\":null,\"labelDesc\":\"Rembrandt van Rijn (15-jul-1606 - 08-okt-1669), Amsterdam\"}],\"plaqueDescriptionDutch\":\"Rembrandts beroemdste en grootste doek werd gemaakt voor de Kloveniersdoelen. Dit was een van de verenigingsgebouwen van de Amsterdamse schutterij, de burgerwacht van de stad. \\r\\n"

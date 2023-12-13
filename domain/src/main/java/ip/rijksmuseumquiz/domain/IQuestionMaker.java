@@ -16,9 +16,11 @@ public interface IQuestionMaker {
 
     public int getNumberOfObjects(String jsonString);
 
-    public String getRandomObjectCode(String jsonString, int objectIndex);
+    public String getObjectCodeOfSpecificIndex(String jsonString, int objectIndex);
 
     public String[] getMultipleTitles(String jsonString, int firstIndex, int secondIndex, int thirdIndex);
 
     public Question createQuestion(String jsonString, String[] wrongAnswers);
+
+    public ArtworkOfTheDay createArtworkOfTheDay(String jsonString);
 }

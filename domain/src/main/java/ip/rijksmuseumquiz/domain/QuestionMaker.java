@@ -1,10 +1,10 @@
 package ip.rijksmuseumquiz.domain;
 
-import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Random;
+import java.util.ArrayList;
 
 import ip.rijksmuseumquiz.domain.jsonParsers.ParsedArtObjectQuery;
 import ip.rijksmuseumquiz.domain.jsonParsers.ParsedMultiPageQuery;
@@ -52,19 +52,30 @@ public class QuestionMaker implements IQuestionMaker {
     }
 
     @Override
-    public String getRandomObjectCode(String jsonSinglePageString, int objectIndex) {
+    public String getObjectCodeOfSpecificIndex(String jsonSinglePageString, int objectIndex) {
         ParsedPageQuery parsedSinglePageQuery = new ParsedPageQuery(jsonSinglePageString);
         String objectCode = parsedSinglePageQuery.getObjectCode(objectIndex);
         return objectCode;
     }
 
     String getLongTitle(String jsonArtObjectString) {
-        ParsedArtObjectQuery parsedArtObjectQuery = new ParsedArtObjectQuery(jsonArtObjectString);
-        String artworkName = parsedArtObjectQuery.getNameOfArtwork();
-        String artistName = parsedArtObjectQuery.getNameOfArtist();
+        String artworkName = getArtworkTitle(jsonArtObjectString);
+        String artistName = getArtistName(jsonArtObjectString);
         String artworkDate = String.valueOf(getDate(jsonArtObjectString));
         String longTitle = artworkName + ", " + artistName + ", " + artworkDate;
         return longTitle;
+    }
+
+    private String getArtworkTitle(String jsonArtObjectString){
+        ParsedArtObjectQuery parsedArtObjectQuery = new ParsedArtObjectQuery(jsonArtObjectString);
+        String title = parsedArtObjectQuery.getNameOfArtwork();
+        return title;
+    }
+
+    private String getArtistName(String jsonArtObjectString) {
+        ParsedArtObjectQuery parsedArtObjectQuery = new ParsedArtObjectQuery(jsonArtObjectString);
+        String artistName = parsedArtObjectQuery.getNameOfArtist();
+        return artistName;
     }
 
     private int getDate(String jsonArtObjectString) {
@@ -73,10 +84,10 @@ public class QuestionMaker implements IQuestionMaker {
         return sortingDate;
     }
 
-    String getPlaqueDescription(String jsonArtObjectString) {
+    private String getObjectCode(String jsonArtObjectString) {
         ParsedArtObjectQuery parsedArtObjectQuery = new ParsedArtObjectQuery(jsonArtObjectString);
-        String plaqueDescription = parsedArtObjectQuery.getPlaqueDescription();
-        return plaqueDescription;
+        String objectCode = parsedArtObjectQuery.getObjectCode();
+        return objectCode;
     }
 
     @Override
@@ -84,15 +95,25 @@ public class QuestionMaker implements IQuestionMaker {
         ParsedArtObjectQuery parsedArtObjectQuery = new ParsedArtObjectQuery(jsonArtObjectString);
         String correctAnswer = getLongTitle(jsonArtObjectString);
         int correctAnswerDate = parsedArtObjectQuery.getDate();
-        String plaqueDescription;
-        try {
-            plaqueDescription = getPlaqueDescription(jsonArtObjectString);
-        } catch (Exception e) {
-            plaqueDescription = "";
-        }
+        String plaqueDescription = getArtworkDescription(jsonArtObjectString);
         
         Question question = new Question(correctAnswer, wrongAnswers, correctAnswerDate, plaqueDescription);
         return question;
+    }
+
+    String getArtworkDescription(String jsonArtObjectString) {
+        ParsedArtObjectQuery parsedArtObjectQuery = new ParsedArtObjectQuery(jsonArtObjectString);
+        String plaqueDescription;
+        try {
+            plaqueDescription = parsedArtObjectQuery.getPlaqueDescription();
+        } catch (Exception e) {
+            try {
+                plaqueDescription = parsedArtObjectQuery.getDescription();
+            } catch (Exception f) {
+                plaqueDescription = "";
+            }
+        }
+        return plaqueDescription;
     }
 
     @Override
@@ -109,10 +130,21 @@ public class QuestionMaker implements IQuestionMaker {
     @Override
     public BufferedImage getColourSchemeImage(String jsonArtObjectString) {
         ParsedArtObjectQuery parsedArtObjectQuery = new ParsedArtObjectQuery(jsonArtObjectString);
-        int sizeOfColourScheme = Math.min(5, parsedArtObjectQuery.getNumberOfColours());
-        Color[] coloursInPainting = parsedArtObjectQuery.getColours(sizeOfColourScheme);
+        ArrayList<ColourData> coloursInPainting = parsedArtObjectQuery.getColours();
         ImageEditor imageEditor = new ImageEditor();
         BufferedImage colourScheme = imageEditor.createColourScheme(coloursInPainting);
         return colourScheme;
+    }
+
+    @Override
+    public ArtworkOfTheDay createArtworkOfTheDay(String jsonArtObjectString) {
+        String title = getArtworkTitle(jsonArtObjectString);
+        String artist = getArtistName(jsonArtObjectString);
+        int year = getDate(jsonArtObjectString);
+        String description = getArtworkDescription(jsonArtObjectString);
+        String objectCode = getObjectCode(jsonArtObjectString);
+        String rijksmuseumUrl = "http://www.rijksmuseum.nl/nl/collectie/" + objectCode;
+        ArtworkOfTheDay artwork = new ArtworkOfTheDay(title, artist, year, description, rijksmuseumUrl, objectCode);
+        return artwork;
     }
 }

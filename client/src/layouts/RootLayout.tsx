@@ -44,6 +44,7 @@ export const RootLayout = () => {
             <nav className="pt-4 flex-1 flex flex-row justify-center gap-2">
                 <NavButton to="/" text="Play the quiz" isActive={pathname === "/"} />
                 <NavButton to="/leaderboard" text="Leaderboard" isActive={pathname === "/leaderboard"} />
+                <NavButton to="/artworkoftheday" text="Artwork of the Day" isActive={pathname==="/artworkoftheday"} />
                 <NavButton to="/about" text="About" isActive={pathname === "/about"} />
                 <Whisper placement="bottomStart" trigger="click" speaker={renderMenu}>
                     <IconButton appearance="default" icon={<ArrowDownIcon />} placement="left">

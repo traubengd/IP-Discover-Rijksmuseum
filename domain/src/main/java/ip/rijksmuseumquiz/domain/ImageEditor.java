@@ -1,12 +1,12 @@
 package ip.rijksmuseumquiz.domain;
 
-import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.ArrayList;
 
 import javax.imageio.ImageIO;
 
@@ -23,15 +23,21 @@ public class ImageEditor {
         return subImage;
     }
 
-    public BufferedImage createColourScheme(Color[] colors) {
+    public BufferedImage createColourScheme(ArrayList<ColourData> coloursInPainting) {
         int imageHeight = 300;
-        int barWidth = 100;
-        int imageWidth = (colors.length)*barWidth;
+        int imageWidth = 500;
+        int totalOfPercentages = 0;
+        for (int i = 0; i < coloursInPainting.size(); i++){
+            totalOfPercentages += coloursInPainting.get(i).getPercentage();
+        }
         BufferedImage colourSchemeImage = new BufferedImage(imageWidth, imageHeight, BufferedImage.TYPE_INT_RGB);
         Graphics2D graphics = colourSchemeImage.createGraphics();
-        for (int i = 0; i < colors.length; i++){
-            graphics.setColor(colors[i]);
-            graphics.fillRect(i*barWidth, 0, barWidth, imageHeight);
+        int originForRectangle = 0;
+        for (int i = 0; i < coloursInPainting.size(); i++){
+            int barWidth = coloursInPainting.get(i).getPercentage() * imageWidth / totalOfPercentages;
+            graphics.setColor(coloursInPainting.get(i).getColor());
+            graphics.fillRect(originForRectangle, 0, barWidth, imageHeight);
+            originForRectangle += barWidth;
         }
         return colourSchemeImage;
     }

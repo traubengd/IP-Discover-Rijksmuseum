@@ -11,7 +11,7 @@ import 'rsuite/dist/rsuite-no-reset.min.css';
 export const Play = () => {
   const { fullQuestion, setFullQuestion } = useFullQuestion();
   const { user, setUser } = useUser();
-  const [imageSize, setImageSize] = useState(40);
+  const [imageSize, setImageSize] = useState("w-[40%]");
   const [questionImageUrl, setQuestionImageUrl] = useState(URL.createObjectURL(fullQuestion!.image));
   const [alert, setAlert] = useState<string | null>(null);
   const [answerColour, setAnswerColour] = useState("bg-black/60");
@@ -23,18 +23,16 @@ export const Play = () => {
   const nextQuestionClick = async () => {
     if (nextQuestion) {
       setFullQuestion(nextQuestion);
-      setAnswerColour("bg-black/60");
-      setImageSize(40);
     } else {
       const result = await getFullQuestion();
       if (isFullQuestion(result)) {
         setFullQuestion(result);
-        setAnswerColour("bg-black/60");
-        setImageSize(40);
       } else {
         await nextQuestionClick();
       }
     }
+    setAnswerColour("bg-black/60");
+    setImageSize("w-[40%]");
   }
 
   const addQuestionToBacklog = async () => {
@@ -108,9 +106,24 @@ export const Play = () => {
   }
 
   const getHintForImageFragment = () => {
-        setImageSize(imageSize+20);
-        fullQuestion!.hintsUsed+= 2;
-        fullQuestion!.pointsAvailable-= 2;
+    switch (fullQuestion!.hintsUsed) {
+      case 0:
+        setImageSize("w-[55%]");
+        break;
+      case 1:
+        setImageSize("w-[70%]");
+        break;
+      case 2:
+        setImageSize("w-[85%]");
+        break;
+      case 3:
+        setImageSize("w-[100%]");
+        break;
+      default:
+        break;
+    }
+    fullQuestion!.hintsUsed ++;
+    fullQuestion!.pointsAvailable --;
   }
 
   const getHintForColourScheme = () => {
@@ -136,7 +149,7 @@ export const Play = () => {
           <>
             <div className="flex justify-center">
               <div className="flex justify-center w-[500px]">
-                <img src={questionImageUrl} className={classNames("m-5 object-none w-[" + imageSize + "%]")} />
+                <img src={questionImageUrl} className={classNames("m-5 object-none", imageSize)} />
               </div>
             </div>
             <h1 className="text-2xl font-semibold text-center text-white my-4">Identify the painting in the above fragment</h1>

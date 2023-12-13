@@ -1,9 +1,12 @@
 package ip.rijksmuseumquiz.domain.jsonParsers;
 
 import java.awt.Color;
+import java.util.*;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+
+import ip.rijksmuseumquiz.domain.ColourData;
 
 public class ParsedArtObjectQuery {
     private JSONObject queryObject;
@@ -61,14 +64,30 @@ public class ParsedArtObjectQuery {
         return numberOfColours;
     }
 
-    public Color[] getColours(int numberOfColours) {
-        Color[] colourArray = new Color[numberOfColours];
+    public ArrayList<ColourData> getColours() {
+        ArrayList<ColourData> colourList = new ArrayList<>();
+        int numberOfColours = queryObject.getJSONArray("colors").length();
         for (int i = 0; i < numberOfColours; i++) {
             String colourCode = queryObject.getJSONArray("colors").getJSONObject(i).getString("hex").trim()
                     .substring(1);
-            Color colorAsObject = Color.decode("0x" + colourCode);
-            colourArray[i] = colorAsObject;
+            Color colourAsObject = Color.decode("0x" + colourCode);
+            int colourPresence = queryObject.getJSONArray("colors").getJSONObject(i).getInt("percentage");
+            ColourData newColour = new ColourData(colourAsObject, colourPresence);
+            if (newColour.getPercentage() > 0){
+                colourList.add(newColour);
+            }
         }
-        return colourArray;
+        Collections.sort(colourList, Comparator.comparing(ColourData::getPercentage).reversed());
+        return colourList;
+    }
+
+    public String getObjectCode() {
+        String objectCode = queryObject.getString("objectNumber");
+        return objectCode;
+    }
+
+    public String getDescription() {
+        String description = queryObject.getString("description");
+        return description;
     }
 }

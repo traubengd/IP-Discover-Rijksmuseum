@@ -4,6 +4,7 @@ import { ErrorPage } from "./pages/ErrorPage";
 import { About } from "./pages/About";
 import { Quizgame } from "./pages/Quizgame";
 import { Leaderboard } from "./pages/Leaderboard";
+import { ArtworkOfTheDay } from "./pages/ArtworkOfTheDay";
 
 export const router = createBrowserRouter([
     {
@@ -18,6 +19,10 @@ export const router = createBrowserRouter([
             {
                 path: "leaderboard",
                 element: <Leaderboard />
+            },
+            {
+                path: "artworkoftheday",
+                element: <ArtworkOfTheDay/>
             },
             {
                 path: "about",
